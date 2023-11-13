@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Snippets
+{% endblock %}
+
+{% block main %}
+<div id="snipdiv" style="width: 25%; margin-left: auto; margin-right: auto; margin-top: 12px; position:relative;">
+    <div class="snippetdiv" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left;">
+        <a href="/profile/{{parentsnippet['username']}}" style="padding: 0px; margin: 0px; text-align: left;">
+            <span style="font-weight: bold; color:black;">{{ snip["name"] }}</span>
+            @{{ parentsnippet["username"] }}
+        </a>
+        <a href="/snippet/{{ parentsnippet["id"] }}" style="color: black; text-decoration: none;">
+            <p style="padding: 0px; margin: 0px;  white-space: pre-line;">{{ parentsnippet["sniptext"] }}</p>
+        </a>    
+    </div>
+    {% for parentreplysnippet in parentreplysnippets %}
+        <div class="snippetdiv" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left;">
+            <a href="/profile/{{parentreplysnippet['username']}}" style="padding: 0px; margin: 0px; text-align: left;">
+                <span style="font-weight: bold; color: black;">{{ parentreplysnippet["name"] }}</span>
+                <span>@{{ parentreplysnippet["username"] }}</span>
+            </a>
+            <a href="/replysnippet/{{ parentreplysnippet["id"] }}" style="color: black; text-decoration: none;">
+                <p style="padding: 0px; margin: 0px;  white-space: pre-line;">{{ parentreplysnippet["replytext"] }}</p>
+            </a>
+        </div>
+    {% endfor %}
+    <div class="snippetdiv" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left;">
+        <a href="/profile/{{snip['username']}}" style="padding: 0px; margin: 0px; text-align: left;">
+            <span style="font-weight: bold; color: black;">{{ snip["name"] }}</span>
+            <span>@{{ snip["username"] }}</span>
+        </a>
+        <p style="padding: 0px; margin: 0px;  white-space: pre-line;">{{ snip["replytext"] }}</p>
+    </div>
+    <div style="display: flex; justify-content: space-between; width: auto;">
+        <input type="hidden" id="snip-id" value="{{ snip["id"] }}">
+        <div style="display:flex;">
+            <button id="like" style="align-self: flex-start;">Like</button>
+            <p style="margin-left: 8px;">{{ snip["likes"] }}</p>
+        </div>
+        <div style="display:flex;">
+            <button id="resnip" style="align-self: flex-start;">Resnip</button>
+            <p style="margin-left: 8px;">{{ snip["resnips"] }}</p>
+        </div>
+        <div style="float: right;">
+            <button id="share">Share</button>
+        </div>
+    </div>
+</div>
+<form action="/reply" method="post" id="replyform" style="margin: auto; width: 25%;">
+    <div class="form-group">
+        <div id="replybox" name="replybox" role="textbox" contenteditable="true" aria-placeholder="Reply" type="text" style="border-width: 1px; border-style: solid; border-color: rgb(218, 218, 218); outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word; width: auto; text-align: left; color: rgb(161, 161, 161);">Reply</div>
+    </div>
+    <div class="form-group">
+        <input id="replysubmit" type="submit" value="Reply" style="background-color: rgb(167, 85, 214); border-radius: 9999px; border-style: none; width: 75px; height: 40px; float: right;"/>
+    </div>
+</form>
+<div id="replydiv" style="width: 25%; margin-left: auto; margin-right: auto; margin-top: 60px; position:relative;">
+    {% for reply in replies %}
+        <div class="snippetdiv" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left;">
+            <a href="/profile/{{reply['username']}}" style="padding: 0px; margin: 0px; text-align: left; display: block; width: fit-content;">
+                <span style="font-weight: bold; color: black;">{{ reply["name"] }}</span>
+                <span>@{{ reply["username"] }}</span>
+            </a>
+            <a href="/replysnippet/{{ reply["id"] }}" style="color: black; text-decoration: none;">
+                <p style="padding: 0px; margin: 0px; white-space: pre-line;">{{ reply["replytext"] }}</p>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    $(document).on('click','#like',function() {
+        $.ajax({
+            type:'POST',
+            url:'/like',
+            data:{
+                sniptype:"replysnippet",
+                snipid:$("#snip-id").val()
+            },
+            success:function()
+            {
+                console.log("Success")
+            }
+        })
+    });
+    $(document).on('click','#resnip',function() {
+        $.ajax({
+            type:'POST',
+            url:'/resnip',
+            data:{
+                sniptype:"replysnippet",
+                snipid:$("#snip-id").val()
+            },
+            success:function()
+            {
+                console.log("Success")
+            }
+        })
+    });
+    $(document).on('click','#share',function() {
+        var tempinp = document.createElement('input'),
+            text = window.location.href;
+        document.body.appendChild(tempinp);
+        tempinp.value = text;
+        tempinp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempinp);
+    });
+
+    let replybox = document.querySelector("#replybox");
+    replybox.addEventListener('focus', function(){
+        if (replybox.innerHTML == 'Reply'){
+            replybox.innerHTML = '';
+            replybox.style.color = "black";
+        }
+    });
+
+    replybox.addEventListener('blur', function(){
+        if (replybox.innerHTML == ''){
+            replybox.innerHTML = 'Reply';
+            replybox.style.color = "gray";
+        }
+    });
+
+    $(document).on('submit','#replyform',function(e) {
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'/reply',
+            data:{
+                sniptype:"replysnippet",
+                snipid:$("#snip-id").val(),
+                replydata:replybox.innerText
+            },
+            success:function(currreply)
+            {
+                $("#replydiv").prepend('<div style="width:auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left;"><a href="/profile/'+currreply["username"]+'" style="padding: 0px; margin: 0px; text-align: left; "><span style="font-weight: bold;">'+currreply["name"]+'</span> @'+currreply["username"]+'</a><p style="padding: 0px; margin: 0px;">'+currreply["replytext"]+'</p></div>');
+                replybox.innerHTML = "Reply";
+                replybox.style.color = "gray";
+            }
+        })
+    });
+
+</script>
+{% endblock %}

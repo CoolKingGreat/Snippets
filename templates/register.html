@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    {% if message %}
+    <div class="alert alert-danger fade show" role="alert" style="display: inline-block; padding-left: 10px; padding-right: 10px;">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" style="padding-left: 10px; margin-left:auto;">
+          <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %}
+    <form action="/register" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" type="text">
+        </div>
+        <p><b>Date of Birth</b></p>
+        <div class="form-group">
+            <select class="form-control" name="month">
+                <option disabled="" selected="" value="">Month</option>
+                {% for i in range(1,13) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <select class="form-control" name="day">
+                <option disabled="" selected="" value="">Day</option>
+                {% for i in range(1,32) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <select class="form-control" name="year">
+                <option disabled="" selected="" value="">Year</option>
+                {% for i in range(2021,1900,-1) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="confirmation" placeholder="Confirmation" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Register</button>
+    </form>
+    <h2 style="margin-top:5%;">Password Requirements</h1>
+    <ul style = "display: inline-block;; text-align: left; padding: 2.5%;">
+        <li>At least 8 letters long</li>
+        <li>Has one capital character</li>
+        <li>Has one special character</li>
+        <li>Has one number</li>
+    </ul>
+    <script>
+        $().alert('close')
+    </script>
+{% endblock %}

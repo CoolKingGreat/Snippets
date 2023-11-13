@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+    {% if message %}
+        <div class="alert alert-danger fade show" role="alert" style="display: inline-block; padding-left: 10px; padding-right: 10px;">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" style="padding-left: 10px; margin-left:auto;">
+              <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+    {% endif %}
+    <form action="/login" method="post">
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Log In</button>
+    </form>
+    <a href="/register">Sign up for Snippets</a>
+{% endblock %}

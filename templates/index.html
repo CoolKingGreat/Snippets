@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Snippets | Home
+{% endblock %}
+{% block main %}    
+<form action="/snip" method="post" id="snipform" style="margin: auto; width: 25%;">
+    <div class="form-group">
+        <div id="snipbox" name="snipbox" role="textbox" contenteditable="true" aria-placeholder="Snip" type="text" style="border-width: 1px; border-style: solid; border-color: rgb(218, 218, 218); outline: none; user-select: text; white-space: pre-wrap; overflow-wrap: break-word; width: auto; text-align: left; color: rgb(161, 161, 161);">Snip</div>
+    </div>
+    <div class="form-group">
+        <input id="snipsubmit" type="submit" value="Snip" style="background-color: rgb(167, 85, 214); border-radius: 9999px; border-style: none; width: 75px; height: 40px; float: right;"/>
+    </div>
+</form>
+
+<div style="border-width: 1px; border-radius: 9999px; border-style: solid; padding: 12px; width: fit-content; margin-right: 25px; margin-top: 10px; position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin-left: auto; height:fit-content;">
+    <input id="searchbox" autocomplete="off" placeholder="Search" type="text" style="border: none; outline-style: none; width: 325px;">
+</div>
+    <a href="/logout" style="border-width: 1px; border-radius: 9999px; border-style: solid; padding: 12px; width: fit-content; margin-left: 25px; margin-top: 10px; position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin-right: auto; height:fit-content;">Logout</a>
+</div>
+
+<div style="padding: 12px; margin-left: auto; width: 350px; margin-right: 25px; margin-top: 10px; text-align: left;">
+    <ul style="display: inline-block; list-style-type: none; position: absolute;"></ul>
+</div>
+
+<div id="snipdiv" style="width: 25%; margin-left: auto; margin-right: auto; margin-top: 25px; position:relative;">
+    {% for snipinfo in snipdata %}
+        <div class="snippetdiv" onclick="location.href='/snippet/{{ snipinfo["id"] }}';" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left; border: 1px solid #EFF3F4; cursor: pointer;">
+            {% if snipinfo["rsname"] %}
+                <p style="color: rgb(83, 100, 113); margin: 0;">{{ snipinfo["rsname"] }} Resnipped</p>
+            {% endif %}
+            <a href="/profile/{{snipinfo['username']}}" style="padding: 0px; margin: 0px; text-align: left; display: block; width: fit-content; text-decoration: none;">
+                <span style="font-weight: bold; color: black;" class="usernamedisplay">{{ snipinfo["name"] }}</span>
+                <span>@{{ snipinfo["username"] }}</span>
+            </a>
+            <p style="padding: 0px; margin: 0px; white-space: pre-line;">{{ snipinfo["sniptext"] }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    let input = document.querySelector("#searchbox");
+    input.addEventListener('keyup', function(){
+        $.get('/usersearch?q=' + input.value, function(results){
+            let html = '';
+            for (let id in results) {
+                let username = results[id].username
+                html += '<li><a href="/profile/'+username+'">'+username+'</a></li>';
+            }
+            if (/^[A-Za-z0-9_]+$/.test(input.value)){
+                html += '<li>Go to <a href="/profile/'+input.value+'">@'+input.value+'</a></li>';
+            }
+            document.querySelector('ul').innerHTML = html;
+        });
+    });
+
+    let snipbox = document.querySelector("#snipbox");
+    snipbox.addEventListener('focus', function(){
+        if (snipbox.innerHTML == 'Snip'){
+            snipbox.innerHTML = '';
+            snipbox.style.color = "black";
+        }
+    });
+
+    snipbox.addEventListener('blur', function(){
+        if (snipbox.innerHTML == ''){
+            snipbox.innerHTML = 'Snip';
+            snipbox.style.color = "gray";
+        }
+    });
+
+    $(document).on('submit','#snipform',function(e) {
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'/snip',
+            data:{
+                snipdata:snipbox.innerText
+            },
+            success:function(currsnip)
+            {
+                $("#snipdiv").prepend('<div style="width:auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left; cursor: pointer;"><a href="/profile/'+currsnip["username"]+'" style="padding: 0px; margin: 0px; text-align: left; "><span style="font-weight: bold; color:black;">'+currsnip["name"]+'</span> @'+currsnip["username"]+'</a><p style="padding: 0px; margin: 0px;">'+currsnip["sniptext"]+'</p></div>');
+                snipbox.innerHTML = "Snip";
+                snipbox.style.color = "gray";
+            }
+        })
+    });
+
+</script>
+{% endblock %}

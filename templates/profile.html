@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{userinfo["name"]}} (@{{userinfo["username"]}}) / Snippets
+{% endblock %}
+
+{% block main %}
+<div style="width: 25%; margin: auto; position:relative;">
+    <div style="text-align: left; width:auto; padding-left: 12px; ">
+        <form action="/{% if isfollowing %}unfollow{% else %}follow{% endif %}" method="post" id="followform">
+            <div class="form-group">
+                <input type="hidden" name="username" value="{{ userinfo['username'] }}"/>
+                <input name="followsubmit" type="submit" value="{% if isfollowing %}Unfollow{% else %}Follow{% endif %}" style="background-color: white; color: rgb(167, 85, 214); border-radius: 9999px; border-style: solid; {% if isfollowing %}width: 100px;{% else %}width: 80px;{% endif %} border-color: rgb(167, 85, 214); height: 40px; float: right; font-weight: bold;"/>
+            </div>
+        </form>
+        <p style="font-weight: 800; line-height: 24px; margin: 0; font-size: 20px;">{{ userinfo["name"] }}</p>
+        <p style="margin-bottom: 12px; margin-left: 0px; margin-right: 0px; margin-top: 0px; font-size: 15px; color: rgb(83, 100, 113);">@{{ userinfo["username" ]}}</p>
+        <p style="margin: 0;">{{ userinfo["bio"] }}</p>
+        <p style="margin: 0;"><span style="margin-right: 20px;"><span style="font-weight: bold;">{{ following_count }}</span> Following</span><span style="font-weight: bold;" id="followercount">{{ follower_count }}</span> Followers</p>
+    </div>
+    {% for snip in snips %}
+    <div onclick="location.href='/snippet/{{ snip["id"] }}';" class="snippetdiv" style="width: auto; height: fit-content; overflow-wrap: break-word; padding: 12px; text-align: left; border: 1px solid #EFF3F4; cursor: pointer;">
+            <a href="/profile/{{ userinfo['username']}}" style="padding: 0px; margin: 0px; text-align: left; display: block; width: fit-content; z-index: 1;">
+                <span style="font-weight: bold; color: black;">{{ userinfo["name"] }}</span>
+                <span>@{{ userinfo["username"] }}</span>
+            </a>
+            <p style="padding: 0px; margin: 0px; white-space: pre-line;">{{ snip["sniptext"] }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+
+    $(document).off().on('submit','#followform',function(e) {
+        if ($("#followform").attr('action') == "/follow"){
+            e.preventDefault();
+            $.ajax({
+                type:'POST',
+                url:'/follow',
+                data:{
+                    following:$("#followform input[name='username']").val()
+                },
+                success:function()
+                {
+                    $("#followform").prop("action", "/unfollow");
+                    $("#followform input[name='followsubmit']").val("Unfollow");
+                    document.querySelector("#followercount").innerText = (Number(document.querySelector("#followercount").innerText) + 1);
+                    $("#followform input[name='followsubmit']").css({"width": "100px"});
+                }
+            })
+        }
+        else {
+            e.preventDefault();
+            $.ajax({
+                type:'POST',
+                url:'/unfollow',
+                data:{
+                    unfollowing:$("#followform input[name='username']").val()
+                },
+                success:function()
+                {
+                    $("#followform").prop("action", "/follow");
+                    $("#followform input[name='followsubmit']").val("Follow");
+                    document.querySelector("#followercount").innerText = (Number(document.querySelector("#followercount").innerText) - 1);
+                    $("#followform input[name='followsubmit']").css({"width": "80px"});
+                }
+            })
+        }
+    });
+
+</script>
+{% endblock %}
